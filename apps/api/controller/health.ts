@@ -1,0 +1,8 @@
+import type{Request,Response} from "express"
+export const health=(req:Request,res:Response)=>{
+   res.send({
+    message:"Server is running"
+   })
+
+
+}
