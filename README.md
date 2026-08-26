@@ -1,2 +1,1 @@
-Benchai:
-A platform where user can come and upload their local models, and we test them on various benchmarks on our servers so that they don't have to run them on their computers.
+BenchAI — a model benchmarking platform where users can upload local AI models and evaluate them across multiple benchmarks on cloud-hosted infrastructure, providing standardized performance metrics, automated testing, and detailed results without requiring users to run the benchmarks on their own machines.
