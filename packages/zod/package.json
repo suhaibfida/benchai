@@ -1,20 +1,18 @@
 {
-  "name": "@repo/db",
+  "name": "@repo/zod",
   "module": "index.ts",
   "type": "module",
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"
   },
-  "exports":{
-    "./prisma":"./index.ts"
-  },
   "peerDependencies": {
     "typescript": "^5"
   },
+  "exports":{
+    "./zod":"./zod.ts"
+  },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.9.1",
-    "dotenv": "^17.4.2",
-    "prisma": "^7.9.1"
+    "zod": "^4.5.2"
   }
 }
