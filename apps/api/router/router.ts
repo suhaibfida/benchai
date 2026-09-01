@@ -1,7 +1,11 @@
 import {Router} from "express"
 import signup from "../controller/signup.js"
 import login from "../controller/login.js"
+import signUrl from "../controller/signedUrl.js"
+import authMiddleware from "../middleware/authMiddleware.js"
 export const router:Router=Router();
 
 router.post("/api/v1/auth/signup",signup)
 router.post("/api/v1/auth/login",login)
+router.post("/api/v1/signurl",authMiddleware,signUrl)
+
