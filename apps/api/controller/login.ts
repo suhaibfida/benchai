@@ -5,6 +5,7 @@ import {prisma} from "@repo/db/prisma"
 import jwt from "jsonwebtoken"
 import "dotenv/config"
 const login=async (req:Request,res:Response)=>{
+    let check;
     const jwtSecret=process.env.JWT_SECRET
     if(!jwtSecret){
         console.log("JWT missing")
@@ -21,7 +22,7 @@ const login=async (req:Request,res:Response)=>{
     }
     console.log(safeParse.data.email)
     try{
-    const check=await prisma.user.findFirst({
+  check=await prisma.user.findFirst({
         where:{
             email:safeParse.data.email
         }
@@ -34,22 +35,22 @@ const login=async (req:Request,res:Response)=>{
     }}catch(err){
         console.log(err)
     }
-    // const passwordCheck=bcrypt.compare(safeParse.data.password,check.password)
-    // if(!passwordCheck){
-    //     return res.status(400).json({
-    //         message:"Password did not match"
-    //     })
-//     // }
-//     const token=jwt.sign({token:check.id},jwtSecret)
-//     res.cookie(token,{
-//         maxAge:1000*60*60*24,
-//         httpOnly:true,
-//         sameSite:"lax",
-//         secure:true
-//     })
-//     return res.status(200).json({
-//         message:"Login successfull"
-//     })
+    const passwordCheck=bcrypt.compare(safeParse.data.password,check.password)
+    if(!passwordCheck){
+        return res.status(400).json({
+            message:"Password did not match"
+        })
+    }
+    const token=jwt.sign({token:check.id},jwtSecret)
+    res.cookie("token",token,{
+        maxAge:1000*60*60*24,
+        httpOnly:true,
+        sameSite:"lax",
+        secure:true
+    })
+    return res.status(200).json({
+        message:"Login successfull"
+    })
 
 
      

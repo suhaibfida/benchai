@@ -10,9 +10,10 @@ import "dotenv/config"
     }
  }
 const authMiddleware=(req:Request,res:Response,next:NextFunction)=>{
+    try{
     const jwtSecret=process.env.JWT_SECRET;
     if(!jwtSecret){
-        console.log("JWT MISSING")
+        console.error("JWT MISSING")
         return res.status(500).json({
             message:"Something went wrong"
         })
@@ -24,13 +25,15 @@ const authMiddleware=(req:Request,res:Response,next:NextFunction)=>{
         })
     }
     const verify=jwt.verify(cookie.token,jwtSecret);
-    console.log(verify)
     if(!verify){
         return res.status(400).json({
             message:"Please logout and then login again"
         })
     }
-    req.id=(verify as JwtPayload).data
-    next();
+    req.id=(verify as JwtPayload).token
+    next();}
+    catch(err){
+        console.error(err)
+    }
 }
 export default authMiddleware;

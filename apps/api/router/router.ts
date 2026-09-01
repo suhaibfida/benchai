@@ -7,5 +7,5 @@ export const router:Router=Router();
 
 router.post("/api/v1/auth/signup",signup)
 router.post("/api/v1/auth/login",login)
-router.post("/api/v1/signurl",authMiddleware,signUrl)
+router.get("/api/v1/getpresignedurl",authMiddleware,signUrl)
 
