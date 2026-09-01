@@ -29,7 +29,8 @@ const signup=async (req:Request ,res:Response)=>{
             message:"Email already exists"
         })
       }
-      const hash=bcrypt.hash(safeParse.data.password,salt)
+      const hash=await bcrypt.hash(safeParse.data.password,salt)
+      console.log(hash)
       const create=await prisma.user.create({
         data:{
             username:safeParse.data.username,
