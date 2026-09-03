@@ -6,14 +6,15 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
-  "exports":{
-    "./prisma":"./index.ts"
+  "exports": {
+    "./prisma": "./index.ts"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.10.0",
     "dotenv": "^17.4.2",
     "prisma": "^7.9.1"
   }

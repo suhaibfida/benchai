@@ -16,5 +16,17 @@ model User{
   username  String @unique
   email     String @unique
   password  String
+  createdAt DateTime @default(now())
+  models    Model[]
 
+}
+model Model{
+  id           String @id @default(uuid())
+  modelName    String
+  key          String
+  status       String
+  description  String?
+  userId       String
+  user         User     @relation(fields:[userId],references:[id])
+  createdAt    DateTime @default(now())
 }
