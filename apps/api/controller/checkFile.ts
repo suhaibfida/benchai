@@ -4,7 +4,7 @@ import {prisma} from "@repo/db/prisma"
 import {Request,Response} from "express"
 import "dotenv/config"
 import sqs from "../lib/sqs.js"
-const fileUploaded=async (req:Request,res:Response)=>{
+const checkFile=async (req:Request,res:Response)=>{
     const model=req.body;
     if(model.status!=="200"){
         res.status(400).json({
@@ -39,4 +39,4 @@ const fileUploaded=async (req:Request,res:Response)=>{
     
 
 }
-export default fileUploaded;
+export default checkFile;
