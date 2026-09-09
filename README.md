@@ -2,6 +2,7 @@
 
 BenchAI is a model benchmarking platform where users can upload local AI models and evaluate them across multiple benchmarks on cloud-hosted infrastructure. It provides standardized performance metrics, automated testing, and detailed results without requiring users to run the benchmarks on their own machines.
 
+<img width="1002" height="529" alt="image" src="https://github.com/user-attachments/assets/021ff3a4-296c-4c09-8c11-6ad9cff779ea" />
 <img width="1203" height="622" alt="image" src="https://github.com/user-attachments/assets/2341c142-f608-406e-a0c8-d3ae4991bd8e" />
 <img width="1195" height="451" alt="image" src="https://github.com/user-attachments/assets/fd449ca1-f343-48b4-beb5-ea3c1d9f537f" />
 
