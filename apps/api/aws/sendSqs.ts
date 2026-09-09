@@ -15,7 +15,7 @@ const sqs=async(key:string)=>{
             MessageBody:JSON.stringify({
                 modelId:model.modelId,
                 getModelUrl:getPresignedUrl,
-                benchmarkTests:["Coding","Math","Reasoning","Coding","TokensPerSecond"]
+                // benchmarkTests:["Coding","Math","Reasoning","Coding","TokensPerSecond"]
             })
         })
     )
