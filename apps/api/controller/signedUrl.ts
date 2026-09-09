@@ -1,7 +1,7 @@
 import {Request,Response } from "express"
 import crypto from "crypto"
 import {prisma} from "@repo/db/prisma"
-import putSignedUrl from "./../lib/putSignedUrl.js"
+import putSignedUrl from "../aws/putSignedUrl.js"
 const signUrl=async (req:Request,res:Response)=>{
     const id=req.id;
     const model=req.body

@@ -1,9 +1,9 @@
-import s3 from "../lib/s3Client.js"
+import s3 from "../aws/s3Client.js"
 import {GetObjectCommand} from "@aws-sdk/client-s3"
 import {prisma} from "@repo/db/prisma"
 import {Request,Response} from "express"
 import "dotenv/config"
-import sqs from "../lib/sqs.js"
+import sqs from "../aws/sendSqs.js"
 const checkFile=async (req:Request,res:Response)=>{
     const model=req.body;
     if(model.status!=="200"){
