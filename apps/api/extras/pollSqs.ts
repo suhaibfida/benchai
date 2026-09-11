@@ -1,21 +1,21 @@
 import {ReceiveMessageCommand} from "@aws-sdk/client-sqs"
 import {SQSClient} from "@aws-sdk/client-sqs"
 import "dotenv/config"
-export const pollSqs=async ()=>{
+export const pollSqs=async (length:any)=>{
     const sqsClient=new SQSClient({
         region:"ap-south-1"}
     )
-    const receiveMessage=await sqsClient.send(
+    const receiveMessage:any=await sqsClient.send(
         new ReceiveMessageCommand({
             QueueUrl:process.env.QUEUE_URL,
-            MaxNumberOfMessages:2,
+            MaxNumberOfMessages:length,
             WaitTimeSeconds:10
         })
     )
-    const message=receiveMessage.Messages?.[0];
-    if(!message?.Body){
-        throw new Error("")
+    const messages=JSON.parse(receiveMessage.Messages);
+    if(!messages){
+        throw new Error("nothing in message")
     }
-    const parsedMessage=JSON.parse(message.Body)
-    return parsedMessage;
+  
+    return messages;
 }

@@ -2,6 +2,7 @@ import {clientModal} from "../extras/clientModal.js"
 import {pollSqs} from "./pollSqs.js"
 
 export const sandbox=async ()=>{
+    const secrets=await clientModal.secrets.fromName("benchmark-secrets");
     const app=await clientModal.apps.fromName("benchmark-app",{
         createIfMissing:true
     })
@@ -27,10 +28,10 @@ export const sandbox=async ()=>{
             "/app/benchmark.py",
             job.jobId,
             job.getModelId,
-            job.getModelUrl
-
-            job.,],
+            job.getModelUrl,
+            ],
          gpu: "T4",
+         secrets:[secrets],
          timeoutMs: 60 * 60 * 1000, 
         });
         console.log("Sandbox created",sb.sandboxId)
