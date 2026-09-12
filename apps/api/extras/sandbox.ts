@@ -1,7 +1,7 @@
 import {clientModal} from "../extras/clientModal.js"
 import {pollSqs} from "./pollSqs.js"
 
-export const sandbox=async ()=>{
+export const sandbox=async (message:any)=>{
     const secrets=await clientModal.secrets.fromName("benchmark-secrets");
     const app=await clientModal.apps.fromName("benchmark-app",{
         createIfMissing:true
@@ -19,16 +19,13 @@ export const sandbox=async ()=>{
 
     "RUN cmake --build /app/llama.cpp/build --config Release -j$(nproc)"
   ]);
-    let job=await pollSqs();
-    if(!job){
-        throw new Error("job not defined")
-    }
+   
     const sb = await clientModal.sandboxes.create(app, image, {
          command: ["python3",
             "/app/benchmark.py",
-            job.jobId,
-            job.getModelId,
-            job.getModelUrl,
+            message.jobId,
+            message.getModelId,
+            message.getModelUrl,
             ],
          gpu: "T4",
          secrets:[secrets],
@@ -37,4 +34,3 @@ export const sandbox=async ()=>{
         console.log("Sandbox created",sb.sandboxId)
 
 }
-sandbox();
