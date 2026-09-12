@@ -5,6 +5,6 @@ import {pollSqs} from "./pollSqs.js"
         if(length>0){
             pollSqs();
         }
-    },100000)
+    },50000)
 }
 export default processPoll

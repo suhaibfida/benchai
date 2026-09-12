@@ -4,11 +4,11 @@ import {invokeDispatcher} from "./invokeLambda.js"
 import "dotenv/config"
 export const pollSqs=async()=>
     {
-        while(true){
+        
             const response=await sqsClient.send(
         new ReceiveMessageCommand({
             QueueUrl:process.env.QUEUE_URL,
-            MaxNumberOfMessages:2,
+            MaxNumberOfMessages:6,
             WaitTimeSeconds:10
         })
      )
@@ -19,4 +19,4 @@ export const pollSqs=async()=>
             return;
       }
         }
-    }
+    
