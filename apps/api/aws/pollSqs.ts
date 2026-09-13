@@ -8,7 +8,7 @@ export const pollSqs=async()=>
             const response=await sqsClient.send(
         new ReceiveMessageCommand({
             QueueUrl:process.env.QUEUE_URL,
-            MaxNumberOfMessages:6,
+            MaxNumberOfMessages:1,
             WaitTimeSeconds:10
         })
      )
