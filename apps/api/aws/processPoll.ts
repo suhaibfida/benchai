@@ -1,9 +1,11 @@
-import {length} from "./getDbSlots.js"
+import {getSlots} from "./getDbSlots.js"
 import {pollSqs} from "./pollSqs.js"
- const processPoll=()=>{
-    setInterval(()=>{
-        if(length>0){
-            pollSqs();
+ const processPoll= async ()=>{
+    const num=await getSlots()
+    setInterval( ()=>{
+        
+        if(num.length>0){
+            pollSqs(num);
         }
     },50000)
 }

@@ -2,7 +2,8 @@ import {dbClient} from "./dynamoClient.js"
 import {DynamoDBDocumentClient,ScanCommand} from "@aws-sdk/lib-dynamodb"
 import "dotenv/config"
 
-const db=DynamoDBDocumentClient.from(dbClient);
+export const getSlots=async ()=>{
+    const db=DynamoDBDocumentClient.from(dbClient);
 
 const result =await db.send(
     new ScanCommand({
@@ -17,4 +18,8 @@ const result =await db.send(
     })
 )
 const freeSlots=result.Items ?? [];
-export const length=freeSlots.length;
+return freeSlots;
+
+}
+
+

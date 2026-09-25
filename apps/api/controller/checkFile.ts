@@ -35,7 +35,7 @@ const checkFile=async (req:Request,res:Response)=>{
             message:"Model not found, Please check uploaded models"
         })
     }
-    console.log(checkModel)
+    console.log("working")
     // sending s3moldel details to awsSQS
     sqs(searchModel.key);
 

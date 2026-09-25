@@ -1,7 +1,7 @@
 import {InvokeCommand} from "@aws-sdk/client-lambda"
 import {lambdaClient} from "./lambdaClient.js"
-import {length} from "./getDbSlots.js"
-export const invokeDispatcher=()=>{
+import {changeDbSlots} from "./changeDbSlots.js"
+export const invokeDispatcher=(length:any)=>{
     const dispatcher=lambdaClient.send(
         // first set dyDB slots to running
     new InvokeCommand({
@@ -13,4 +13,7 @@ export const invokeDispatcher=()=>{
             // they should be equal to how many slots are available.
         })
     }));
+    // we will set the dynamo db slots to occupied with respect to how many sandboxes we created
+    changeDbSlots(length);
 }
+

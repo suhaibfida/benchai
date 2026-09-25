@@ -9,9 +9,10 @@ const sqs=async(key:string)=>{
             key:key
         }
     })
+    console.log(process.env.QUEUE_URL)
     await sqsClient.send(
         new SendMessageCommand({
-            QueueUrl:process.env.QUEUEURL,
+            QueueUrl:process.env.QUEUE_URL,
             MessageBody:JSON.stringify({
                 modelId:model.modelId,
                 getModelUrl:getPresignedUrl,
@@ -19,6 +20,7 @@ const sqs=async(key:string)=>{
             })
         })
     )
+    console.log("sqs done")
 
 
 }
