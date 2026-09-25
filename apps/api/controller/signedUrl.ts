@@ -13,19 +13,21 @@ const signUrl=async (req:Request,res:Response)=>{
                 message:"Internal server error"
             })
         }
-            prisma.model.create({
+            await prisma.model.create({
         data:{
-            modelName:model.user.create,
+            modelName:model.modelName,
             key:key,
             status:"pending",
-            description:model.description
+            description:model.description,
+            userId:id
         }
     })
-    const findModel=prisma.user.findFirst({
+    const findModel=await prisma.model.findFirst({
         where:{
             key:key
         }
     })
+    console.log(findModel)
     return res.status(200).json({
        message:"File location",
        modelId:findModel.id,

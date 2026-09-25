@@ -6,6 +6,7 @@ import "dotenv/config"
 import sqs from "../aws/sendSqs.js"
 const checkFile=async (req:Request,res:Response)=>{
     const model=req.body;
+    console.log(model)
     if(model.status!=="200"){
         res.status(400).json({
             message:"File not uploaded successfully,please upload it again"
@@ -17,11 +18,12 @@ const checkFile=async (req:Request,res:Response)=>{
         })
          
     }
-    const searchModel=prisma.model.findUnique({
+    const searchModel=await prisma.model.findFirst({
         where:{
             id:model.modelId
         }
     })
+    console.log(searchModel.key)
     const checkModel=await s3.send(
         new GetObjectCommand({
             Bucket:"screenio-s3",
@@ -33,6 +35,7 @@ const checkFile=async (req:Request,res:Response)=>{
             message:"Model not found, Please check uploaded models"
         })
     }
+    console.log(checkModel)
     // sending s3moldel details to awsSQS
     sqs(searchModel.key);
 

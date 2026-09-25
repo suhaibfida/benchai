@@ -6,11 +6,13 @@ const db=DynamoDBDocumentClient.from(dbClient);
 
 const result =await db.send(
     new ScanCommand({
-            TableName: "GpuSlots",
+            TableName: "sandboxes",
     FilterExpression:"#status= :free",
+     ExpressionAttributeNames: {
+      "#status": "status",
+    },
     ExpressionAttributeValues:{
         ":free":"free"
-    
 }
     })
 )

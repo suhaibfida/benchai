@@ -9,5 +9,6 @@ export const router:Router=Router();
 router.post("/api/v1/auth/signup",signup)
 router.post("/api/v1/auth/login",login)
 router.get("/api/v1/getpresignedurl",authMiddleware,signUrl)
+router.post("/api/v1/response=200",authMiddleware,checkFile)
 router.get("/api/v1/checkfile",authMiddleware,checkFile)
 
