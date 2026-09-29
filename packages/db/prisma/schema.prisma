@@ -12,12 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 model User{
-  id        String @id  @default(uuid())
-  username  String @unique
-  email     String @unique
-  password  String
-  createdAt DateTime @default(now())
-  models    Model[]
+  id           String @id  @default(uuid())
+  username     String @unique
+  email        String @unique
+  password     String
+  createdAt    DateTime @default(now())
+  models       Model[]
+  modelResults modelResults[]
 
 }
 model Model{
@@ -26,7 +27,25 @@ model Model{
   key          String
   status       String
   description  String?
+  jobId        String
+  sandboxId    String
   userId       String
+  results      Modelresults
   user         User     @relation(fields:[userId],references:[id])
   createdAt    DateTime @default(now())
+
+
 }
+  model Modelresults{
+    geminiResult,llamma,info,time,answers
+    id            String @id @default(uuid())
+    geminiResult  String
+    llammma       String
+    info          String
+    time          String
+    answers       String
+    modelId       String
+    userId        String
+    model         Model    @relation(fields:[modelId],references:[modelId])
+    user          User   @relation (fields:[userId],references:[userId])
+  }
