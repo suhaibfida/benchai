@@ -2,6 +2,7 @@ import {getSlots} from "./getDbSlots.js"
 import {dbClient} from "./dynamoClient.js"
 import {DynamoDBDocumentClient,UpdateCommand} from "@aws-sdk/lib-dynamodb"
 export const changeDbSlots=async (length:any)=>{
+  try{
     const freeSlots:any=await getSlots();
     const slotsToRun=(freeSlots.Items??[]).slice(0,length);
       const db=DynamoDBDocumentClient.from(dbClient);
@@ -24,4 +25,8 @@ export const changeDbSlots=async (length:any)=>{
     })
   );
 }
+  }catch(err)
+{
+  console.log(err)
+}    
 }

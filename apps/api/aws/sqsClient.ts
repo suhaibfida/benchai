@@ -5,13 +5,14 @@ const secretAccessKey=process.env.AWS_SECRET_ACCESS_KEY
 if(!accessKeyId || !secretAccessKey){
     throw new Error("Aws credentials missing")
 };
-
-const sqsClient =new SQSClient({
-    region:"ap-southeast-2",
+let sqsClient:any;
+try{ sqsClient =new SQSClient({
+    region:"us-east-1",
     credentials:{
         accessKeyId,
         secretAccessKey
     }
-})
+})}catch(err){console.log(err)}
+
 
 export default sqsClient;

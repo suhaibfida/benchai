@@ -4,7 +4,8 @@ import sqsClient from "./sqsClient.js"
 import {prisma} from "@repo/db/prisma"
 import "dotenv/config"
 const sqs=async(key:string)=>{
-    const model=await prisma.model.findFirst({
+    try{
+        const model=await prisma.model.findFirst({
         where:{
             key:key
         }
@@ -23,5 +24,9 @@ const sqs=async(key:string)=>{
     console.log("sqs done")
 
 
+    }catch(err){
+        console.log(err)
+    }
+    
 }
 export default sqs

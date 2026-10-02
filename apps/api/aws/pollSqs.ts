@@ -5,10 +5,16 @@ import "dotenv/config"
 
 export const pollSqs=async(num:any)=>
     {
+        try{
+              const queueUrl = process.env.QUEUE_URL;
+
+            if (!queueUrl) {
+                throw new Error("QUEUE_URL is not defined");
+            }
             const response=await sqsClient.send(
         new ReceiveMessageCommand({
             QueueUrl:process.env.QUEUE_URL,
-            MaxNumberOfMessages:num,
+            MaxNumberOfMessages:num.length,
             WaitTimeSeconds:10
         })
      )
@@ -18,5 +24,11 @@ export const pollSqs=async(num:any)=>
             invokeDispatcher(messages.length);
             return;
       }
+        }
+        catch(err){
+            console.log(err)
+            throw err
+        }
+         
         }
     

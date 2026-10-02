@@ -1,12 +1,16 @@
 import {getSlots} from "./getDbSlots.js"
 import {pollSqs} from "./pollSqs.js"
  const processPoll= async ()=>{
-    const num=await getSlots()
-    setInterval( ()=>{
+    try{ const num=await getSlots()
+    setInterval( async()=>{
         
         if(num.length>0){
-            pollSqs(num);
+           await pollSqs(num);
         }
-    },50000)
+    },50000)}
+    catch(err){
+        console.log(err)
+    }
+   
 }
 export default processPoll

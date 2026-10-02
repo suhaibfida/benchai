@@ -4,11 +4,17 @@ const secretAccessKey=process.env.AWS_SECRET_ACCESS_KEY
 if(!accessKeyId || !secretAccessKey){
     throw new Error("Aws credentials missing")
 };
-
-export const lambdaClient=new LambdaClient({
+let lambdaClient:any
+try{
+      lambdaClient=new LambdaClient({
     region:"ap-south-1",
      credentials:{
         accessKeyId,
         secretAccessKey
     }
 })
+}
+catch(err){
+
+}
+export  {lambdaClient};

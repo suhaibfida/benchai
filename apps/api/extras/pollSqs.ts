@@ -1,9 +1,12 @@
 import {ReceiveMessageCommand} from "@aws-sdk/client-sqs"
 import {SQSClient} from "@aws-sdk/client-sqs"
 import "dotenv/config"
+
 export const pollSqs=async (length:any)=>{
     const sqsClient=new SQSClient({
-        region:"ap-south-1"}
+        region:"ap-south-1",
+        
+    }
     )
     const receiveMessage:any=await sqsClient.send(
         new ReceiveMessageCommand({
