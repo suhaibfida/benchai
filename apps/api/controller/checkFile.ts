@@ -38,6 +38,9 @@ const checkFile=async (req:Request,res:Response)=>{
     console.log("working")
     // sending s3moldel details to awsSQS
     sqs(searchModel.key);
+    return res.status(200).json({
+        message:"Model added successfully,please wait for few minutes,results will be shown on the dashboard,you can exit."
+    })
 
     
 
