@@ -8,7 +8,7 @@ const getPresignedUrl=async(key:string)=>{
         Bucket:"screenio-s3",
         Key:key
     })
-    const getUrl= await getSignedUrl(s3,object,{
+    const getUrl:any= await getSignedUrl(s3,object,{
         expiresIn:24*60*60
     })
     return getUrl;

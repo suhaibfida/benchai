@@ -10,7 +10,7 @@ if(!accessKeyId || !secretAccessKey){
 };
 
 s3=new S3Client({
-    region:"us-east-1",
+    region:"ap-southeast-2",
     credentials:{
         accessKeyId,
         secretAccessKey

@@ -8,22 +8,8 @@ export const pollSqs=async(num:any)=>
         try{
               const queueUrl = process.env.QUEUE_URL;
 
-            if (!queueUrl) {
-                throw new Error("QUEUE_URL is not defined");
-            }
-            const response=await sqsClient.send(
-        new ReceiveMessageCommand({
-            QueueUrl:process.env.QUEUE_URL,
-            MaxNumberOfMessages:num.length,
-            WaitTimeSeconds:10
-        })
-     )
-      const messages=response.Messages ?? [];
-      if(messages.length>0)
-        {
-            invokeDispatcher(messages.length);
+            invokeDispatcher(num.length);
             return;
-      }
         }
         catch(err){
             console.log(err)

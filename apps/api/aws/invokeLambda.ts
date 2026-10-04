@@ -1,25 +1,25 @@
 import {InvokeCommand} from "@aws-sdk/client-lambda"
 import {lambdaClient} from "./lambdaClient.js"
 import {changeDbSlots} from "./changeDbSlots.js"
-export const invokeDispatcher=(length:any)=>{
+export const invokeDispatcher=async (length:any)=>{
     try{
-        const dispatcher=lambdaClient.send(
+        const dispatcher=await lambdaClient.send(
         // first set dyDB slots to running
     new InvokeCommand({
-        FunctionName:"Model-Dispatcher",
+        FunctionName:"benchaiLambda",
         InvocationType:"RequestResponse",
-        Payload:JSON.stringify({
-            gpuSandboxLength:length
-            // length of how many messages we are going to get from the queue, 
-            // they should be equal to how many slots are available.
-        })
-    }));
+        Payload: Buffer.from(JSON.stringify({
+             gpuSandboxLength: length
+})
+    )}));
+    console.log(dispatcher)
     // we will set the dynamo db slots to occupied with respect to how many sandboxes we created
-    changeDbSlots(length);
+    
     }
     catch(err){
         console.log(err)
     }
+    await changeDbSlots(length);
     
 }
 

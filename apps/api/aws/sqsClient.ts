@@ -7,7 +7,7 @@ if(!accessKeyId || !secretAccessKey){
 };
 let sqsClient:any;
 try{ sqsClient =new SQSClient({
-    region:"us-east-1",
+    region:"eu-north-1",
     credentials:{
         accessKeyId,
         secretAccessKey

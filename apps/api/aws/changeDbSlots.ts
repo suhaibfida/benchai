@@ -3,6 +3,7 @@ import {dbClient} from "./dynamoClient.js"
 import {DynamoDBDocumentClient,UpdateCommand} from "@aws-sdk/lib-dynamodb"
 export const changeDbSlots=async (length:any)=>{
   try{
+    console.log("invoked lambda 2")
     const freeSlots:any=await getSlots();
     const slotsToRun=(freeSlots.Items??[]).slice(0,length);
       const db=DynamoDBDocumentClient.from(dbClient);

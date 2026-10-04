@@ -7,7 +7,7 @@ if(!accessKeyId || !secretAccessKey){
 let lambdaClient:any
 try{
       lambdaClient=new LambdaClient({
-    region:"ap-south-1",
+    region:"eu-north-1",
      credentials:{
         accessKeyId,
         secretAccessKey

@@ -12,7 +12,7 @@ export const pollSqs=async (length:any)=>{
         new ReceiveMessageCommand({
             QueueUrl:process.env.QUEUE_URL,
             MaxNumberOfMessages:length,
-            WaitTimeSeconds:10000
+            WaitTimeSeconds:20
         })
     )
     const messages=JSON.parse(receiveMessage.Messages);

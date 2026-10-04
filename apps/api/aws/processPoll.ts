@@ -7,7 +7,7 @@ import {pollSqs} from "./pollSqs.js"
         if(num.length>0){
            await pollSqs(num);
         }
-    },50000)}
+    },5000)}
     catch(err){
         console.log(err)
     }
