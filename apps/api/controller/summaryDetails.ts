@@ -1,5 +1,7 @@
 import {Request,Response} from "express"
+import {terminate} from "./terminate.js"
 import {prisma} from "@repo/db/prisma"
+
 // job,
 //     gemini_result,
 //     llama_bench_result,
@@ -15,15 +17,14 @@ const summaryDetails=async (req:Request,res:Response)=>{
             id:modelId
         },
         data:{
-            jobId:jobId
+            jobId:jobId,
+            status:"done"
         }
     })
     
      console.log(".............sadfasd.............",model)
     const user = await prisma.modelresults.create({
   data: {
-    modelId: model.id,
-    userId: model.userId,
 
     scores: JSON.stringify(scores),
     summary: JSON.stringify(summary),
@@ -44,11 +45,16 @@ const summaryDetails=async (req:Request,res:Response)=>{
     }
   }
 });
- console.log(user)
- return res.status(200).json({
+ console.log("........................................................................")
+  
+  res.status(200).json({
     message:"Results added successfully",
     result:user
  })
+ console.log("........................................................................")
+ await terminate(modelS?.sandboxId);
+ console.log(modelS?.sandboxId)
+ return;
 
 
 }

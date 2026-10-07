@@ -1,16 +1,10 @@
 import {Request,Response} from "express"
 import {prisma} from "@repo/db/prisma"
+
  const saveSandboxid=async (req:Request,res:Response)=>{
  console.log("fhxrfyjgh","000000000000000")
    try {
     const { modelId, messageId, sandboxId } = req.body;
-    console.log("...........",modelId, messageId, sandboxId ,"000000000000000")
-
-    console.log("SAVE SANDBOX REQUEST:", {
-      modelId,
-      messageId,
-      sandboxId,
-    });
 
     if (!modelId || !sandboxId) {
       return res.status(400).json({
@@ -46,10 +40,11 @@ import {prisma} from "@repo/db/prisma"
     });
 
     console.log("SANDBOX ID SAVED:", updatedModel);
+    
 
     return res.status(200).json({
       success: true,
-      message: "Sandbox ID saved successfully",
+      message: "Sandbox ID saved & terminated successfully",
       sandboxId,
     });
 
@@ -60,6 +55,7 @@ import {prisma} from "@repo/db/prisma"
       error: error.message,
     });
   }
+ 
    
  }
 export default saveSandboxid;
