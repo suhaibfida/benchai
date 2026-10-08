@@ -18,34 +18,35 @@ model User{
   password     String
   createdAt    DateTime @default(now())
   models       Model[]
-  modelResults modelResults[]
+  modelResults Modelresults[]
 
 }
 model Model{
   id           String @id @default(uuid())
   modelName    String
-  key          String
-  status       String
+  key          String?
+  status       String?
   description  String?
-  jobId        String
-  sandboxId    String
+  jobId        String?
+  sandboxId    String?
+  receiptHandle String?
   userId       String
-  results      Modelresults
+  results      Modelresults?
   user         User     @relation(fields:[userId],references:[id])
   createdAt    DateTime @default(now())
 
 
 }
   model Modelresults{
-    geminiResult,llamma,info,time,answers
     id            String @id @default(uuid())
-    geminiResult  String
-    llammma       String
-    info          String
-    time          String
-    answers       String
-    modelId       String
+    scores        String
+    summary       String
+    performance   String
+    responseTime  String
+    modelInfo     String
+    benchmark     String
+    modelId       String @unique
     userId        String
-    model         Model    @relation(fields:[modelId],references:[modelId])
-    user          User   @relation (fields:[userId],references:[userId])
+    model         Model    @relation(fields:[modelId],references:[id])
+    user          User     @relation(fields:[userId],references:[id])
   }

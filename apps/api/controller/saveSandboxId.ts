@@ -4,7 +4,7 @@ import {prisma} from "@repo/db/prisma"
  const saveSandboxid=async (req:Request,res:Response)=>{
  console.log("fhxrfyjgh","000000000000000")
    try {
-    const { modelId, messageId, sandboxId } = req.body;
+    const { modelId, sandboxId,receiptHandle} = req.body;
 
     if (!modelId || !sandboxId) {
       return res.status(400).json({
@@ -36,6 +36,7 @@ import {prisma} from "@repo/db/prisma"
       data: {
         
         sandboxId,
+        receiptHandle
       },
     });
 
