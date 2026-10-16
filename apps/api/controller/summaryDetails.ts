@@ -1,6 +1,7 @@
 import {Request,Response} from "express"
 import {terminate} from "./terminate.js"
 import {prisma} from "@repo/db/prisma"
+import {queue} from "./../aws/deleteQueue.js"
 
 // job,
 //     gemini_result,
@@ -53,7 +54,8 @@ const summaryDetails=async (req:Request,res:Response)=>{
  })
  console.log("........................................................................")
  await terminate(modelS?.sandboxId);
- console.log(modelS?.sandboxId)
+ console.log(modelS?.sandboxId);
+ await queue(modelS.receiptHandle);
  return;
 
 
