@@ -3,6 +3,7 @@ import json
 import time
 import subprocess
 import os
+import shutil
 from pathlib import Path
 
 import requests
@@ -12,19 +13,33 @@ import requests
 # CONFIG
 # ============================================================
 
-LLAMA_CLI = "/app/llama.cpp/build/bin/llama-cli"
-LLAMA_BENCH = "/app/llama.cpp/build/bin/llama-bench"
-
-MODEL_DIR = Path("/tmp/model")
+MODEL_DIR = Path(os.getenv("MODEL_DIR", "/tmp/model"))
 MODEL_PATH = MODEL_DIR / "model.gguf"
 
 SERVER_URL = os.getenv("SERVER_URL")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
 GEMINI_MODEL = os.getenv(
     "GEMINI_MODEL",
-    "gemini-2.5-flash"
+    "gemini-3.5-flash"
 )
+
+GEMINI_FALLBACK_MODELS = [
+    m.strip()
+    for m in os.getenv(
+        "GEMINI_FALLBACK_MODELS",
+        "gemini-3.5-flash"
+    ).split(",")
+    if m.strip()
+]
+
+
+# llama-server
+LLAMA_SERVER_PORT = 8089
+LLAMA_SERVER_LOG = "/tmp/llama-server.log"
+
+_llama_server_proc = None
 
 
 # ============================================================
@@ -86,9 +101,11 @@ Find and fix the bug in this Python function:
 
 def remove_duplicates(items):
     result = []
+
     for i in range(len(items)):
         if items[i] not in result:
             result.append(items[i + 1])
+
     return result
 
 Explain the bug and provide the corrected implementation.
@@ -102,6 +119,7 @@ Implement a Python function that checks whether a string contains
 balanced parentheses, brackets, and braces.
 
 For example:
+
 "({[]})" is valid
 "({[}])" is invalid
 
@@ -127,9 +145,11 @@ Try to solve it in O(n) time.
 Merge overlapping intervals.
 
 Input:
+
 [[1,3], [2,6], [8,10], [9,12]]
 
 Expected output:
+
 [[1,6], [8,12]]
 
 Explain your algorithm and complexity.
@@ -157,6 +177,7 @@ subarray.
 Implement an O(n) solution and explain why it works.
 """
         }
+
     ],
 
 
@@ -291,6 +312,7 @@ to fill the tank?
 Show the calculation.
 """
         }
+
     ],
 
 
@@ -442,6 +464,7 @@ medicines?
 Explain your reasoning.
 """
         }
+
     ]
 }
 
@@ -467,6 +490,40 @@ def get_job():
         "modelId": model_id,
         "modelUrl": model_url
     }
+
+
+# ============================================================
+# FIND LLAMA.CPP BINARIES
+# ============================================================
+
+def find_binary(name):
+    """Find a llama.cpp binary wherever the image put it."""
+
+    candidates = [
+        f"/app/llama.cpp/build/bin/{name}",
+        f"/app/{name}",
+        f"/usr/local/bin/{name}",
+    ]
+
+    for path in candidates:
+
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return path
+
+    found = shutil.which(name)
+
+    if found:
+        return found
+
+    listing = (
+        os.listdir("/app")
+        if os.path.isdir("/app")
+        else "no /app directory"
+    )
+
+    raise FileNotFoundError(
+        f"{name} not found. /app contains: {listing}"
+    )
 
 
 # ============================================================
@@ -532,6 +589,123 @@ def download_model(model_url):
 
 
 # ============================================================
+# LLAMA-SERVER MANAGEMENT
+# ============================================================
+
+def tail_server_log(chars=3000):
+
+    try:
+
+        with open(LLAMA_SERVER_LOG) as file:
+            return file.read()[-chars:]
+
+    except Exception:
+
+        return "(no server log)"
+
+
+def start_server():
+
+    global _llama_server_proc
+
+    binary = find_binary("llama-server")
+
+    print(f"Starting llama-server: {binary}")
+
+    log = open(LLAMA_SERVER_LOG, "w")
+
+    _llama_server_proc = subprocess.Popen(
+        [
+            binary,
+
+            "-m",
+            str(MODEL_PATH),
+
+            "-ngl",
+            "999",
+
+            "-c",
+            "4096",
+
+            "--host",
+            "127.0.0.1",
+
+            "--port",
+            str(LLAMA_SERVER_PORT)
+        ],
+
+        stdout=log,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL
+    )
+
+    deadline = time.time() + 180
+
+    while time.time() < deadline:
+
+        if _llama_server_proc.poll() is not None:
+
+            raise RuntimeError(
+                "llama-server exited early:\n"
+                + tail_server_log()
+            )
+
+        try:
+
+            response = requests.get(
+                f"http://127.0.0.1:{LLAMA_SERVER_PORT}/health",
+                timeout=2
+            )
+
+            if response.status_code == 200:
+
+                print("llama-server is ready")
+
+                with open(LLAMA_SERVER_LOG) as file:
+
+                    for line in file:
+
+                        low = line.lower()
+
+                        if "offloaded" in low or "cuda" in low:
+                            print("[server]", line.strip())
+
+                return
+
+        except requests.RequestException:
+            pass
+
+        time.sleep(1)
+
+    raise RuntimeError(
+        "llama-server not ready after 180s:\n"
+        + tail_server_log()
+    )
+
+
+def stop_server():
+
+    global _llama_server_proc
+
+    if _llama_server_proc is None:
+        return
+
+    print("Stopping llama-server...")
+
+    _llama_server_proc.terminate()
+
+    try:
+
+        _llama_server_proc.wait(timeout=10)
+
+    except subprocess.TimeoutExpired:
+
+        _llama_server_proc.kill()
+
+    _llama_server_proc = None
+
+
+# ============================================================
 # RUN ONE QUESTION
 # ============================================================
 
@@ -539,44 +713,77 @@ def run_question(prompt):
 
     start = time.time()
 
-    result = subprocess.run(
-        [
-            LLAMA_CLI,
-
-            "-m",
-            str(MODEL_PATH),
-
-            "-p",
-            prompt,
-
-            "-n",
-            "512",
-
-            "-ngl",
-            "999",
-
-            "--temp",
-            "0"
-        ],
-
-        capture_output=True,
-        text=True
+    print(
+        "Gemini key exists:",
+        bool(GEMINI_API_KEY)
     )
 
-    end = time.time()
+    print(
+        "Gemini key length:",
+        len(GEMINI_API_KEY)
+        if GEMINI_API_KEY
+        else 0
+    )
 
-    if result.returncode != 0:
+    print(
+        "Gemini model:",
+        GEMINI_MODEL
+    )
 
-        raise RuntimeError(
-            f"llama-cli failed:\n"
-            f"{result.stderr}"
+    response = requests.post(
+        f"http://127.0.0.1:{LLAMA_SERVER_PORT}"
+        "/v1/chat/completions",
+
+        json={
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt.strip()
+                }
+            ],
+
+            "max_tokens": 512,
+
+            "temperature": 0
+        },
+
+        timeout=120
+    )
+
+    response.raise_for_status()
+
+    data = response.json()
+
+    answer = (
+        data["choices"][0]
+        ["message"]
+        ["content"]
+        .strip()
+    )
+
+    elapsed = time.time() - start
+
+    tokens_per_second = data.get(
+        "timings",
+        {}
+    ).get(
+        "predicted_per_second"
+    )
+
+    print(
+        f"done in {elapsed:.1f}s"
+        + (
+            f" ({tokens_per_second:.1f} tok/s)"
+            if tokens_per_second
+            else ""
         )
+    )
 
     return {
-        "answer": result.stdout.strip(),
+        "answer": answer,
 
         "timeSeconds": round(
-            end - start,
+            elapsed,
             3
         )
     }
@@ -594,7 +801,7 @@ def run_llama_bench():
 
     result = subprocess.run(
         [
-            LLAMA_BENCH,
+            find_binary("llama-bench"),
 
             "-m",
             str(MODEL_PATH),
@@ -616,7 +823,9 @@ def run_llama_bench():
         ],
 
         capture_output=True,
-        text=True
+        text=True,
+        stdin=subprocess.DEVNULL,
+        timeout=900
     )
 
     end = time.time()
@@ -624,8 +833,8 @@ def run_llama_bench():
     if result.returncode != 0:
 
         raise RuntimeError(
-            f"llama-bench failed:\n"
-            f"{result.stderr}"
+            "llama-bench failed:\n"
+            + result.stderr
         )
 
     try:
@@ -703,6 +912,7 @@ def run_benchmarks(test_names):
                     "timeSeconds": result[
                         "timeSeconds"
                     ]
+
                 })
 
             except Exception as error:
@@ -722,6 +932,7 @@ def run_benchmarks(test_names):
                     "timeSeconds": None,
 
                     "error": str(error)
+
                 })
 
     return answers
@@ -731,6 +942,109 @@ def run_benchmarks(test_names):
 # GEMINI JUDGE
 # ============================================================
 
+def call_gemini(payload):
+    """
+    Call Gemini with retries + model fallback.
+    """
+
+    models = [GEMINI_MODEL] + [
+        m for m in GEMINI_FALLBACK_MODELS
+        if m != GEMINI_MODEL
+    ]
+
+    last_error = None
+
+    for model in models:
+
+        url = (
+            "https://generativelanguage.googleapis.com/"
+            f"v1beta/models/{model}:generateContent"
+        )
+
+        for attempt in range(1, 6):
+
+            response = None
+
+            try:
+
+                response = requests.post(
+                    url,
+
+                    json=payload,
+
+                    headers={
+                        "x-goog-api-key": GEMINI_API_KEY
+                    },
+
+                    timeout=120
+                )
+
+            except requests.RequestException as error:
+
+                last_error = (
+                    f"{model}: network error "
+                    f"{type(error).__name__}"
+                )
+
+            if response is not None:
+
+                if response.status_code == 200:
+
+                    data = response.json()
+
+                    try:
+
+                        return (
+                            data["candidates"][0]
+                            ["content"]
+                            ["parts"][0]
+                            ["text"]
+                        )
+
+                    except (KeyError, IndexError):
+
+                        last_error = (
+                            f"{model}: unexpected response "
+                            f"{str(data)[:300]}"
+                        )
+
+                        break
+
+                last_error = (
+                    f"{model}: HTTP {response.status_code} "
+                    f"{response.text[:300]}"
+                )
+
+                if response.status_code not in (
+                    429,
+                    500,
+                    502,
+                    503,
+                    504
+                ):
+                    break
+
+            wait = min(
+                2 ** attempt,
+                30
+            )
+
+            print(
+                f"Gemini attempt {attempt} failed "
+                f"({last_error}). Retrying in {wait}s..."
+            )
+
+            time.sleep(wait)
+
+        print(
+            f"Giving up on model: {model}"
+        )
+
+    raise RuntimeError(
+        f"Gemini judge failed: {last_error}"
+    )
+
+
 def judge_with_gemini(answers):
 
     if not GEMINI_API_KEY:
@@ -739,11 +1053,9 @@ def judge_with_gemini(answers):
             "GEMINI_API_KEY is not set"
         )
 
-    print("Sending benchmark answers to Gemini...")
-
-    # --------------------------------------------------------
-    # Build compact benchmark data
-    # --------------------------------------------------------
+    print(
+        "Sending benchmark answers to Gemini..."
+    )
 
     benchmark_text = ""
 
@@ -759,16 +1071,13 @@ def judge_with_gemini(answers):
 Question ID: {item["questionId"]}
 
 Question:
+
 {item["question"]}
 
 Model Answer:
+
 {item["answer"]}
 """
-
-
-    # --------------------------------------------------------
-    # Judge prompt
-    # --------------------------------------------------------
 
     judge_prompt = f"""
 You are the judge for an AI model benchmark.
@@ -866,12 +1175,6 @@ Benchmark answers:
 {benchmark_text}
 """
 
-    url = (
-        "https://generativelanguage.googleapis.com/"
-        f"v1beta/models/{GEMINI_MODEL}:generateContent"
-        f"?key={GEMINI_API_KEY}"
-    )
-
     payload = {
 
         "contents": [
@@ -896,26 +1199,10 @@ Benchmark answers:
         }
     }
 
-    response = requests.post(
-        url,
-        json=payload,
-        timeout=120
-    )
-
-    response.raise_for_status()
-
-    data = response.json()
-
-    text = (
-        data["candidates"][0]
-        ["content"]
-        ["parts"][0]
-        ["text"]
-    )
+    text = call_gemini(payload)
 
     text = text.strip()
 
-    # Safety in case Gemini still returns fences
     if text.startswith("```"):
 
         text = text.replace(
@@ -1023,10 +1310,6 @@ def create_final_result(
 
         "status": "completed",
 
-        # ----------------------------------------------------
-        # Gemini scores
-        # ----------------------------------------------------
-
         "scores": {
 
             "overall": gemini_result[
@@ -1045,10 +1328,6 @@ def create_final_result(
                 "reasoning"
             ]["score"]
         },
-
-        # ----------------------------------------------------
-        # Gemini summary
-        # ----------------------------------------------------
 
         "summary": {
 
@@ -1077,20 +1356,12 @@ def create_final_result(
             ]
         },
 
-        # ----------------------------------------------------
-        # Performance
-        # ----------------------------------------------------
-
         "performance": {
 
             "llamaBench": llama_bench_result,
 
             "responseTime": time_metrics
         },
-
-        # ----------------------------------------------------
-        # Model information
-        # ----------------------------------------------------
 
         "model": {
 
@@ -1105,10 +1376,6 @@ def create_final_result(
                     "downloadTimeSeconds"
                 ]
         },
-
-        # ----------------------------------------------------
-        # Benchmark information
-        # ----------------------------------------------------
 
         "benchmark": {
 
@@ -1147,7 +1414,9 @@ def send_results(result):
             "SERVER_URL is not set"
         )
 
-    print("Sending final result to server...")
+    print(
+        "Sending final result to server..."
+    )
 
     response = requests.post(
 
@@ -1158,10 +1427,26 @@ def send_results(result):
         timeout=60
     )
 
-    response.raise_for_status()
+    print(
+        "RESULT API STATUS:",
+        response.status_code
+    )
 
     print(
-        "Result successfully sent to server."
+        "RESULT API RESPONSE:",
+        response.text
+    )
+
+    if not response.ok:
+
+        raise RuntimeError(
+            f"Result API failed: "
+            f"{response.status_code} - "
+            f"{response.text}"
+        )
+
+    print(
+        "Result saved successfully"
     )
 
 
@@ -1190,7 +1475,9 @@ def main():
         f"Model ID: {job['modelId']}"
     )
 
-    print("Tests: Coding, Math, Reasoning")
+    print(
+        "Tests: Coding, Math, Reasoning"
+    )
 
 
     # --------------------------------------------------------
@@ -1203,12 +1490,25 @@ def main():
 
 
     # --------------------------------------------------------
-    # 2. Run benchmark questions
+    # 2. Start llama-server and run benchmark
     # --------------------------------------------------------
 
-    answers = run_benchmarks(
-        ["Coding", "Math", "Reasoning"]
-    )
+    try:
+
+        start_server()
+
+        answers = run_benchmarks(
+            [
+                "Coding",
+                "Math",
+                "Reasoning"
+            ]
+        )
+
+    finally:
+
+        # Free the GPU before llama-bench
+        stop_server()
 
 
     # --------------------------------------------------------
@@ -1261,6 +1561,7 @@ def main():
     # --------------------------------------------------------
 
     print("")
+
     print("========================================")
     print("FINAL RESULT")
     print("========================================")
@@ -1283,6 +1584,7 @@ def main():
 
 
     print("")
+
     print("========================================")
     print("BENCHMARK COMPLETED")
     print("========================================")
@@ -1301,6 +1603,7 @@ if __name__ == "__main__":
     except Exception as error:
 
         print("")
+
         print("========================================")
         print("BENCHMARK FAILED")
         print("========================================")
