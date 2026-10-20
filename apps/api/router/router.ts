@@ -8,6 +8,7 @@ import saveSandboxid from "../controller/saveSandboxId.js"
 import summaryDetails from "../controller/summaryDetails.js"
 import {checkModels} from "../controller/checkModels.js"
 import {modelResult} from "../controller/modelResult.js"
+import {allModels} from "../controller/allModels.js"
 export const router:Router=Router();
 
 router.post("/api/v1/auth/signup",signup)
@@ -18,4 +19,5 @@ router.post("/api/v1/addsandboxid",saveSandboxid)
 router.post("/api/v1/benchmark/results",summaryDetails)
 router.post("/api/v1/user/models",authMiddleware,checkModels)
 router.post("/api/v1/user/model/result",authMiddleware,modelResult)
+router.post("/api/v1/user/models",allModels)
 
