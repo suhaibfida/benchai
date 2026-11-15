@@ -4,6 +4,8 @@ BenchAI is a model benchmarking platform where users can upload local AI models 
 
 <img width="1547" height="681" alt="Untitled-2026-09-12-1456" src="https://github.com/user-attachments/assets/3614582c-4f52-4aa3-97a9-fbc003fa6fd1" />
 <img width="1334" height="606" alt="image" src="https://github.com/user-attachments/assets/2aa5d56c-7942-4b46-a500-e9924f4aabe8" />
+<img width="1236" height="346" alt="image" src="https://github.com/user-attachments/assets/f18f0e98-ba74-4ee0-8d49-b223980264f2" />
+
 
 
 <details>
